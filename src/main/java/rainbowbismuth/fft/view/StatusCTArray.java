@@ -10,7 +10,7 @@ public class StatusCTArray {
     private final TacticsInspector inspector;
     private final int address;
 
-    public StatusCTArray(TacticsInspector inspector, int address) {
+    public StatusCTArray(final TacticsInspector inspector, final int address) {
         this.inspector = inspector;
         this.address = address;
     }

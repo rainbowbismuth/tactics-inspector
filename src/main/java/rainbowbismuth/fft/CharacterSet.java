@@ -16,7 +16,7 @@ public class CharacterSet {
     /**
      * Only handling the first part of the character set right now.
      */
-    private final static String MAPPING = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!�?�+�/�:";
+    private static final String MAPPING = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!�?�+�/�:";
     private final char[] mapping;
 
     protected CharacterSet() {

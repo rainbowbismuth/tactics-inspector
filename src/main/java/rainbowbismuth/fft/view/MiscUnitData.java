@@ -15,7 +15,7 @@ public class MiscUnitData {
     private final StatusArray statusToAdd;
     private final StatusArray statusToRemove;
 
-    public MiscUnitData(TacticsInspector inspector, int address, int index) {
+    public MiscUnitData(final TacticsInspector inspector, final int address, final int index) {
         this.inspector = inspector;
         this.address = address;
         this.index = index;
@@ -62,7 +62,7 @@ public class MiscUnitData {
         private final String displayName;
         private final WordSize wordSize;
 
-        Field(int offset, String displayName, WordSize wordSize) {
+        Field(final int offset, final String displayName, final WordSize wordSize) {
             this.offset = offset;
             this.displayName = displayName;
             this.wordSize = wordSize;

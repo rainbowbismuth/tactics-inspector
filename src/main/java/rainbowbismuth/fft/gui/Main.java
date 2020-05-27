@@ -43,7 +43,7 @@ public final class Main {
     // User UI to render
     private final InspectorUI inspectorUI = new InspectorUI();
     private long windowPtr; // pointer to the current GLFW window
-    private String glslVersion = null; // We can initialize our renderer with different versions of the GLSL
+    private String glslVersion; // We can initialize our renderer with different versions of the GLSL
 
     public Main() throws Exception {
     }

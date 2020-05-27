@@ -154,7 +154,7 @@ public class UnitData {
         private final String displayName;
         private final WordSize wordSize;
 
-        Field(int offset, String displayName, WordSize wordSize) {
+        Field(final int offset, final String displayName, final WordSize wordSize) {
             this.offset = offset;
             this.displayName = displayName;
             this.wordSize = wordSize;

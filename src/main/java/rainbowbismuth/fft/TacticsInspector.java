@@ -74,7 +74,7 @@ public class TacticsInspector {
         return Byte.toUnsignedInt(ram[address]);
     }
 
-    public long read(final int address, WordSize wordSize) {
+    public long read(final int address, final WordSize wordSize) {
         long result = Byte.toUnsignedLong(ram[address]);
         if (wordSize == WordSize.SHORT || wordSize == WordSize.WORD) {
             result += Byte.toUnsignedLong(ram[address + 1]) << 8;

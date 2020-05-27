@@ -21,7 +21,7 @@ public final class InspectorUI {
     private final TacticsInspector inspector;
     private final Map<Long, ImInt> inputInts = new HashMap<>();
     private final List<UnitData.Field> statusFields = List.of(UnitData.Field.MOVE, UnitData.Field.JUMP, UnitData.Field.SP);
-    private List<MiscUnitData.Field> miscModifyFields = List.of(
+    private final List<MiscUnitData.Field> miscModifyFields = List.of(
             MiscUnitData.Field.PORTRAIT_VRAM_SLOT,
             MiscUnitData.Field.PORTRAIT_SPRITESHEET_ID,
             MiscUnitData.Field.STORED_PALETTE,
@@ -75,7 +75,7 @@ public final class InspectorUI {
         ImGui.end();
     }
 
-    private void miscUnitDataFieldControl(MiscUnitData misc, MiscUnitData.Field field) {
+    private void miscUnitDataFieldControl(final MiscUnitData misc, final MiscUnitData.Field field) {
         ImGui.setNextItemWidth(150.0f);
         final Integer newVal = inputInt(field.getDisplayName(), (int) misc.read(field), 1);
         if (newVal != null) {
@@ -132,7 +132,7 @@ public final class InspectorUI {
         }
     }
 
-    private Integer inputInt(String label, int value, int step) {
+    private Integer inputInt(final String label, final int value, final int step) {
         final ImInt imInt = inputInts.computeIfAbsent(
                 ImGui.getID(String.format("ImInt-%s", label)),
                 key -> new ImInt(value));
@@ -158,7 +158,7 @@ public final class InspectorUI {
         }
     }
 
-    private void unitDataFieldControl(UnitData unit, UnitData.Field field) {
+    private void unitDataFieldControl(final UnitData unit, final UnitData.Field field) {
         ImGui.setNextItemWidth(150.0f);
         final Integer newVal = inputInt(field.getDisplayName(), (int) unit.read(field), 1);
         if (newVal != null) {
