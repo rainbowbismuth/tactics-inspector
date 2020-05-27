@@ -23,36 +23,36 @@ public enum Status {
     CHICKEN("Chicken", 2, 0x04),
     FROG("Frog", 2, 0x02),
     CRITICAL("Critical", 2, 0x01),
-    POISON("Poison", 3, 0x80, 0x5D),
-    REGEN("Regen", 3, 0x40, 0x5E),
-    PROTECT("Protect", 3, 0x20, 0x5F),
-    SHELL("Shell", 3, 0x10, 0x60),
-    HASTE("Haste", 3, 0x08, 0x61),
-    SLOW("Slow", 3, 0x04, 0x62),
-    STOP("Stop", 3, 0x02, 0x63),
-    WALL("Wall", 3, 0x01, 0x64),
-    FAITH("Faith", 4, 0x80, 0x65),
-    INNOCENT("Innocent", 4, 0x40, 0x66),
-    CHARM("Charm", 4, 0x20, 0x67),
-    SLEEP("Sleep", 4, 0x10, 0x68),
-    DONT_MOVE("Don't Move", 4, 0x08, 0x69),
-    DONT_ACT("Don't Act", 4, 0x04, 0x6A),
-    REFLECT("Reflect", 4, 0x02, 0x6B),
-    DEATH_SENTENCE("Death Sentence", 4, 0x01, 0x6C),
+    POISON("Poison", 3, 0x80, 0),
+    REGEN("Regen", 3, 0x40, 1),
+    PROTECT("Protect", 3, 0x20, 2),
+    SHELL("Shell", 3, 0x10, 3),
+    HASTE("Haste", 3, 0x08, 4),
+    SLOW("Slow", 3, 0x04, 5),
+    STOP("Stop", 3, 0x02, 6),
+    WALL("Wall", 3, 0x01, 7),
+    FAITH("Faith", 4, 0x80, 8),
+    INNOCENT("Innocent", 4, 0x40, 9),
+    CHARM("Charm", 4, 0x20, 10),
+    SLEEP("Sleep", 4, 0x10, 11),
+    DONT_MOVE("Don't Move", 4, 0x08, 12),
+    DONT_ACT("Don't Act", 4, 0x04, 13),
+    REFLECT("Reflect", 4, 0x02, 14),
+    DEATH_SENTENCE("Death Sentence", 4, 0x01, 15),
     ;
 
     public static final Status[] VALUES = Status.values();
     private final String displayName;
     private final int offset;
     private final int flag;
-    private final int ctOffset;
+    private final Integer ctOffset;
 
 
     Status(final String displayName, final int offset, final int flag) {
         this.displayName = displayName;
         this.offset = offset;
         this.flag = flag;
-        this.ctOffset = 0;
+        this.ctOffset = null;
     }
 
     Status(final String displayName, final int offset, final int flag, final int ctOffset) {
@@ -74,7 +74,7 @@ public enum Status {
         return flag;
     }
 
-    public int getCTOffset() {
+    public Integer getCTOffset() {
         return ctOffset;
     }
 }

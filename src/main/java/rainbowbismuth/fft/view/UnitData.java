@@ -15,6 +15,7 @@ public class UnitData {
     private final StatusArray autoStatus;
     private final StatusArray statusImmunity;
     private final StatusArray status;
+    private final StatusCTArray statusCT;
     private final StatusArray attackAddStatus;
     private final StatusArray attackRemoveStatus;
     private final StatusArray attackInflictedStatus;
@@ -22,6 +23,9 @@ public class UnitData {
     private static final int AUTO_STATUS = 0x004E;
     private static final int STATUS_IMMUNITY = 0x0053;
     private static final int STATUS = 0x0058;
+
+    private static final int STATUS_CT = 0x005D;
+
     private static final int ATTACK_ADD_STATUS = 0x01A7;
     private static final int ATTACK_REMOVE_STATUS = 0x01AC;
     private static final int ATTACK_INFLICTED_STATUS = 0x1BB;
@@ -85,6 +89,7 @@ public class UnitData {
         autoStatus = new StatusArray(inspector, address + AUTO_STATUS);
         statusImmunity = new StatusArray(inspector, address + STATUS_IMMUNITY);
         status = new StatusArray(inspector, address + STATUS);
+        statusCT = new StatusCTArray(inspector, address + STATUS_CT);
         attackAddStatus = new StatusArray(inspector, address + ATTACK_ADD_STATUS);
         attackRemoveStatus = new StatusArray(inspector, address + ATTACK_REMOVE_STATUS);
         attackInflictedStatus = new StatusArray(inspector, address + ATTACK_INFLICTED_STATUS);
@@ -148,6 +153,10 @@ public class UnitData {
 
     public StatusArray getStatus() {
         return status;
+    }
+
+    public StatusCTArray getStatusCT() {
+        return statusCT;
     }
 
     public StatusArray getAttackAddStatus() {

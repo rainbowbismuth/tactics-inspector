@@ -8,6 +8,7 @@ import rainbowbismuth.fft.TacticsInspector;
 import rainbowbismuth.fft.WindowsMemoryViewer;
 import rainbowbismuth.fft.enums.Status;
 import rainbowbismuth.fft.view.StatusArray;
+import rainbowbismuth.fft.view.StatusCTArray;
 import rainbowbismuth.fft.view.UnitData;
 
 import java.util.HashMap;
@@ -209,10 +210,10 @@ public final class InspectorUI {
                 renderStatusArray(unit.getStatusImmunity());
                 ImGui.endTabItem();
             }
-//            if (ImGui.beginTabItem("CT")) {
-//                renderStatusCTPage(unit);
-//                ImGui.endTabItem();
-//            }
+            if (ImGui.beginTabItem("CT")) {
+                renderStatusCTPage(unit.getStatus(), unit.getStatusCT());
+                ImGui.endTabItem();
+            }
             ImGui.endTabBar();
         }
     }
@@ -257,24 +258,25 @@ public final class InspectorUI {
         ImGui.columns();
     }
 
-//    private void renderStatusCTPage(final BattleUnit unit) {
-//        ImGui.columns(2);
-//        for (int j = 0; j < Status.VALUES.length; j++) {
-//            final Status status = Status.VALUES[j];
-//            if (status.getCTOffset() == 0) {
-//                continue;
-//            }
-//            if (j != 0 && j % 10 == 0) ImGui.nextColumn();
-//            ImGui.setNextItemWidth(150.0f);
-//            final Integer newCT = inputInt(String.format("##%s-CT", status.name()), unit.getStatusCT(status), 1);
-//            if (newCT != null) {
-//                unit.setStatusCT(inspector, status, newCT);
-//            }
-//            ImGui.sameLine();
-//            if (ImGui.checkbox(status.getDisplayName(), unit.hasStatus(status))) {
-//                unit.setStatus(inspector, status, !unit.hasStatus(status));
-//            }
-//        }
-//        ImGui.columns();
-//    }
+    private void renderStatusCTPage(final StatusArray statusArray, final StatusCTArray statusCT) {
+        ImGui.columns(2);
+        for (int j = 0; j < Status.VALUES.length; j++) {
+            final Status status = Status.VALUES[j];
+            if (status.getCTOffset() == null) {
+                continue;
+            }
+            if (j != 0 && j % 10 == 0) ImGui.nextColumn();
+
+            ImGui.setNextItemWidth(150.0f);
+            final Integer newCT = inputInt(String.format("##%s-CT", status.name()), statusCT.getCT(status), 1);
+            if (newCT != null) {
+                statusCT.setCT(status, newCT);
+            }
+            ImGui.sameLine();
+            if (ImGui.checkbox(status.getDisplayName(), statusArray.hasStatus(status))) {
+                statusArray.setStatus(status, !statusArray.hasStatus(status));
+            }
+        }
+        ImGui.columns();
+    }
 }
