@@ -7,6 +7,7 @@ import rainbowbismuth.fft.PSMemory;
 import rainbowbismuth.fft.TacticsInspector;
 import rainbowbismuth.fft.WindowsMemoryViewer;
 import rainbowbismuth.fft.enums.Status;
+import rainbowbismuth.fft.view.MiscUnitData;
 import rainbowbismuth.fft.view.StatusArray;
 import rainbowbismuth.fft.view.StatusCTArray;
 import rainbowbismuth.fft.view.UnitData;
@@ -20,6 +21,13 @@ public final class InspectorUI {
     private final TacticsInspector inspector;
     private final Map<Long, ImInt> inputInts = new HashMap<>();
     private final List<UnitData.Field> statusFields = List.of(UnitData.Field.MOVE, UnitData.Field.JUMP, UnitData.Field.SP);
+    private List<MiscUnitData.Field> miscModifyFields = List.of(
+            MiscUnitData.Field.PORTRAIT_VRAM_SLOT,
+            MiscUnitData.Field.PORTRAIT_SPRITESHEET_ID,
+            MiscUnitData.Field.STORED_PALETTE,
+            MiscUnitData.Field.UNIT_SPRITESHEET_ID,
+            MiscUnitData.Field.UNIT_PALETTE,
+            MiscUnitData.Field.MODIFIED_PALETTE);
 
     public InspectorUI() throws Exception {
         psMemory = WindowsMemoryViewer.createEPSXE15Viewer(null, "ePSXe - Enhanced PSX emulator");
@@ -49,14 +57,16 @@ public final class InspectorUI {
         ImGui.popStyleVar();
         if (ImGui.beginTabBar("Units")) {
             final List<UnitData> unitData = inspector.getUnitData();
+            final List<MiscUnitData> miscUnitData = inspector.getMiscUnitData();
             for (int i = 0; i < UnitData.NUM; i++) {
                 final UnitData unit = unitData.get(i);
+                final MiscUnitData misc = miscUnitData.get(i);
 //                final MiscUnitData misc = miscUnitData.get(i);
                 if (unit.isInvalid()) {
                     continue;
                 }
                 if (ImGui.beginTabItem(String.format("%s##%d", unit.getName(), unit.getIndex()))) {
-                    renderUnitTab(unit); //, misc);
+                    renderUnitTab(unit, misc);
                     ImGui.endTabItem();
                 }
             }
@@ -65,42 +75,33 @@ public final class InspectorUI {
         ImGui.end();
     }
 
-//    private void renderMisc(final MiscUnitData misc) throws PSMemoryWriteException {
-//        ImGui.text(String.format("Previous 0x%08X", misc.getPreviousPtr()));
-//        ImGui.text(String.format("ID %d", misc.getId()));
-//        ImGui.text(String.format("Unit Data Ptr 0x%08X", misc.getUnitDataPtr()));
-//
-//        ImGui.setNextItemWidth(150.0f);
-//        final Integer newVRAMSlot = inputInt("Spritesheet VRAM Slot", misc.getSpritesheetVramSlot(), 1);
-//        if (newVRAMSlot != null) {
-//            misc.setSpritesheetVramSlot(inspector, newVRAMSlot);
-//        }
-//        ImGui.setNextItemWidth(150.0f);
-//        final Integer newSpriteSheetID = inputInt("Spritesheet ID", misc.getSpritesheetId(), 1);
-//        if (newSpriteSheetID != null) {
-//            misc.setSpritesheetId(inspector, newSpriteSheetID);
-//        }
-//        ImGui.setNextItemWidth(150.0f);
-//        final Integer newStoredPalette = inputInt("Stored Palette", misc.getStoredPalette(), 1);
-//        if (newStoredPalette != null) {
-//            misc.setStoredPalette(inspector, newStoredPalette);
-//        }
-//        ImGui.setNextItemWidth(300);
-//        final Integer newVRAMSpritesheetID = inputInt("VRAM Spritesheet ID", misc.getVramSpritesheetId(), 1);
-//        if (newVRAMSpritesheetID != null) {
-//            misc.setVramSpritesheetId(inspector, newVRAMSpritesheetID);
-//        }
-//        ImGui.setNextItemWidth(300.0f);
-//        final Integer newVRAMPaletteID = inputInt("VRAM Palette ID", misc.getVramPaletteId(), 1);
-//        if (newVRAMPaletteID != null) {
-//            misc.setVramPaletteId(inspector, newVRAMPaletteID);
-//        }
-//        ImGui.setNextItemWidth(150.0f);
-//        final Integer newModifiedPalette = inputInt("Modified Palette", misc.getModifiedPalette(), 1);
-//        if (newModifiedPalette != null) {
-//            misc.setModifiedPalette(inspector, newModifiedPalette);
-//        }
-//    }
+    private void miscUnitDataFieldControl(MiscUnitData misc, MiscUnitData.Field field) {
+        ImGui.setNextItemWidth(150.0f);
+        final Integer newVal = inputInt(field.getDisplayName(), (int) misc.read(field), 1);
+        if (newVal != null) {
+            misc.write(field, newVal);
+        }
+    }
+
+    private void renderMisc(final MiscUnitData misc) {
+        ImGui.text(String.format("Previous 0x%08X", misc.read(MiscUnitData.Field.PREV)));
+        ImGui.text(String.format("ID %d", misc.read(MiscUnitData.Field.ID)));
+        ImGui.text(String.format("Unit Data Pointer 0x%08X", misc.read(MiscUnitData.Field.UNIT_DATA_POINTER)));
+        for (final MiscUnitData.Field field : miscModifyFields) {
+            miscUnitDataFieldControl(misc, field);
+        }
+        if (ImGui.beginTabBar("Misc Tab Bar")) {
+            if (ImGui.beginTabItem("Add")) {
+                renderStatusArray(misc.getStatusToAdd());
+                ImGui.endTabItem();
+            }
+            if (ImGui.beginTabItem("Remove")) {
+                renderStatusArray(misc.getStatusToRemove());
+                ImGui.endTabItem();
+            }
+            ImGui.endTabBar();
+        }
+    }
 
     void renderVitalBar(final String name, final int min, final int max, final float red, final float green, final float blue) {
         ImGui.text(name);
@@ -113,8 +114,7 @@ public final class InspectorUI {
         ImGui.text(String.format("%03d / %03d", min, max));
     }
 
-    //    void renderUnitTab(final BattleUnit unit, final MiscUnitData misc) throws Exception {
-    void renderUnitTab(final UnitData unit) throws Exception {
+    void renderUnitTab(final UnitData unit, final MiscUnitData misc) {
         if (ImGui.collapsingHeader("Vitals", ImGuiTreeNodeFlags.DefaultOpen)) {
             renderVitals(unit);
         }
@@ -127,9 +127,9 @@ public final class InspectorUI {
         if (ImGui.collapsingHeader("Attack")) {
             renderAttack(unit);
         }
-//        if (ImGui.collapsingHeader("Misc")) {
-//            renderMisc(misc);
-//        }
+        if (ImGui.collapsingHeader("Misc")) {
+            renderMisc(misc);
+        }
     }
 
     private Integer inputInt(String label, int value, int step) {

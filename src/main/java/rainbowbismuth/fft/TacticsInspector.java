@@ -1,5 +1,6 @@
 package rainbowbismuth.fft;
 
+import rainbowbismuth.fft.view.MiscUnitData;
 import rainbowbismuth.fft.view.UnitData;
 
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ public class TacticsInspector {
 
     private final byte[] ram = new byte[RAM_SIZE];
     private final List<UnitData> unitData = new ArrayList<>(UnitData.NUM);
+    private final List<MiscUnitData> miscUnitData = new ArrayList<>(MiscUnitData.NUM);
 
     private final List<Integer> writeAddresses = new ArrayList<>();
     private final List<byte[]> writeBytes = new ArrayList<>();
@@ -22,6 +24,9 @@ public class TacticsInspector {
     public TacticsInspector() {
         for (int i = 0; i < UnitData.NUM; i++) {
             unitData.add(unitDataView(i));
+        }
+        for (int i = 0; i < MiscUnitData.NUM; i++) {
+            miscUnitData.add(miscUnitData(i));
         }
     }
 
@@ -35,8 +40,34 @@ public class TacticsInspector {
         return new UnitData(this, address, index);
     }
 
+    private MiscUnitData miscUnitData(final int index) {
+        int address = (int) (MISC_UNIT_DATA_ADDR - USER_MEMORY_BASE);
+        address += index * MiscUnitData.SIZE;
+        return new MiscUnitData(this, address, index);
+    }
+
     public List<UnitData> getUnitData() {
         return unitData;
+    }
+
+    public List<MiscUnitData> getMiscUnitData() {
+        final List<MiscUnitData> tempMiscUnitData = new ArrayList<>(miscUnitData);
+        final List<MiscUnitData> sortedMisc = new ArrayList<>(MiscUnitData.NUM);
+        long previous = 0;
+        for (int i = 0; i < MiscUnitData.NUM; i++) {
+            for (int j = 0; j < tempMiscUnitData.size(); j++) {
+                final MiscUnitData j_misc = tempMiscUnitData.get(j);
+                final long prev_pointer = j_misc.read(MiscUnitData.Field.PREV);
+                if (prev_pointer == previous) {
+                    previous = USER_MEMORY_BASE + j_misc.getAddress();
+                    sortedMisc.add(j_misc);
+                    tempMiscUnitData.remove(j);
+                    break;
+                }
+            }
+        }
+        sortedMisc.addAll(tempMiscUnitData);
+        return sortedMisc;
     }
 
     public int readByte(final int address) {
