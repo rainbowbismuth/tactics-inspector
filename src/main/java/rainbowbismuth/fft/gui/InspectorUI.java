@@ -6,6 +6,7 @@ import imgui.enums.*;
 import rainbowbismuth.fft.PSMemory;
 import rainbowbismuth.fft.TacticsInspector;
 import rainbowbismuth.fft.WindowsMemoryViewer;
+import rainbowbismuth.fft.WordSize;
 import rainbowbismuth.fft.enums.Status;
 import rainbowbismuth.fft.view.MiscUnitData;
 import rainbowbismuth.fft.view.StatusArray;
@@ -28,6 +29,8 @@ public final class InspectorUI {
             MiscUnitData.Field.UNIT_SPRITESHEET_ID,
             MiscUnitData.Field.UNIT_PALETTE,
             MiscUnitData.Field.MODIFIED_PALETTE);
+    private final ImInt memViewerBaseAddr = new ImInt(0x1a_f3c4);
+    private final ImInt memViewerPeekAddr = new ImInt(0x1a_f3c4);
 
     public InspectorUI() throws Exception {
         psMemory = WindowsMemoryViewer.createEPSXE15Viewer(null, "ePSXe - Enhanced PSX emulator");
@@ -43,11 +46,6 @@ public final class InspectorUI {
         psMemory.read(inspector.getRAM());
         ImGui.setNextWindowSize(winWidth, winHeight);
         ImGui.setNextWindowPos(0.0f, 0.0f);
-        renderUnitSelectionWindow();
-        inspector.flush(psMemory);
-    }
-
-    void renderUnitSelectionWindow() throws Exception {
         ImGui.pushStyleVar(ImGuiStyleVar.WindowRounding, 0.0f);
         ImGui.begin("Unit Data Viewer",
                 ImGuiWindowFlags.NoCollapse
@@ -55,7 +53,63 @@ public final class InspectorUI {
                         | ImGuiWindowFlags.NoTitleBar
                         | ImGuiWindowFlags.NoDecoration);
         ImGui.popStyleVar();
-        if (ImGui.beginTabBar("Units")) {
+        if (ImGui.beginTabBar("Main Tools")) {
+            if (ImGui.beginTabItem("Unit Viewer")) {
+                renderUnitSelectionWindow();
+                ImGui.endTabItem();
+            }
+            if (ImGui.beginTabItem("Memory Viewer")) {
+                renderMemoryViewer();
+                ImGui.endTabItem();
+            }
+            ImGui.endTabBar();
+        }
+        ImGui.end();
+        inspector.flush(psMemory);
+    }
+
+    void renderMemoryViewer() {
+        final byte[] ram = inspector.getRAM();
+        ImGui.text(String.format("0x%08x", memViewerBaseAddr.get()));
+        ImGui.setNextItemWidth(300.0f);
+        ImGui.sameLine();
+        ImGui.inputInt("Base Address", memViewerBaseAddr, 0x10, 0x100);
+        ImGui.text(String.format("0x%08x", memViewerPeekAddr.get()));
+        ImGui.setNextItemWidth(300.0f);
+        ImGui.sameLine();
+        ImGui.inputInt("Peek Address", memViewerPeekAddr, 0x1, 0x10);
+
+        final int peekData = Byte.toUnsignedInt(ram[memViewerPeekAddr.get()]);
+        ImGui.text(String.format("      0x%02x", peekData));
+        ImGui.sameLine();
+        ImGui.setNextItemWidth(300.0f);
+        final Integer newPeekVal = inputInt("Poke", peekData, 1);
+        if (newPeekVal != null) {
+            inspector.write(memViewerPeekAddr.get(), newPeekVal, WordSize.BYTE);
+        }
+
+        final int baseAddress = memViewerBaseAddr.get();
+        for (int i = 0; i < 0x20; i++) {
+            final int rowAddress = baseAddress + (i * 0x10);
+            ImGui.text(String.format("0x%08x", 0x8000_0000L + rowAddress));
+            for (int j = 0; j < 0x10; j++) {
+                ImGui.sameLine();
+                final int byteAddr = rowAddress + j;
+                final int data = Byte.toUnsignedInt(ram[byteAddr]);
+                if (byteAddr == memViewerPeekAddr.get()) {
+                    ImGui.textColored(0.9f, 0.1f, 0.1f, 1.0f, String.format("%02x", data));
+                } else if (data == 0) {
+                    ImGui.textDisabled("00");
+                } else {
+                    ImGui.text(String.format("%02x", data));
+                }
+            }
+        }
+    }
+
+
+    void renderUnitSelectionWindow() {
+        if (ImGui.beginTabBar("Unit Selection")) {
             final List<UnitData> unitData = inspector.getUnitData();
             final List<MiscUnitData> miscUnitData = inspector.getMiscUnitData();
             for (int i = 0; i < UnitData.NUM; i++) {
@@ -72,7 +126,6 @@ public final class InspectorUI {
             }
             ImGui.endTabBar();
         }
-        ImGui.end();
     }
 
     private void miscUnitDataFieldControl(final MiscUnitData misc, final MiscUnitData.Field field) {

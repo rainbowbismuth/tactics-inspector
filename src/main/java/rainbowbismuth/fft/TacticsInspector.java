@@ -12,6 +12,7 @@ public class TacticsInspector {
     private static final long USER_MEMORY_BASE = 0x8000_0000L;
     private static final long UNIT_STATS_ADDR = 0x8019_08ccL;
     private static final long MISC_UNIT_DATA_ADDR = 0x800b_7308L;
+    private static final long AI_DATA_ADDR = 0x801a_f3c4L;
     private static final long ABILITY_NAME_TABLE_ADDR = 0x8016_3b88L;
 
     private final byte[] ram = new byte[RAM_SIZE];
