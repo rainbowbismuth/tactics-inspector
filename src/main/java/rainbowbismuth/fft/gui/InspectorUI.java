@@ -89,7 +89,7 @@ public final class InspectorUI {
         }
 
         final int baseAddress = memViewerBaseAddr.get();
-        for (int i = 0; i < 0x20; i++) {
+        for (int i = 0; i < 0x18; i++) {
             final int rowAddress = baseAddress + (i * 0x10);
             ImGui.text(String.format("0x%08x", 0x8000_0000L + rowAddress));
             for (int j = 0; j < 0x10; j++) {
@@ -102,6 +102,9 @@ public final class InspectorUI {
                     ImGui.textDisabled("00");
                 } else {
                     ImGui.text(String.format("%02x", data));
+                }
+                if (ImGui.isItemClicked()) {
+                    memViewerPeekAddr.set(byteAddr);
                 }
             }
         }
