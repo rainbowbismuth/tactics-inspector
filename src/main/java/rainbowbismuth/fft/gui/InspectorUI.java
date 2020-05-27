@@ -18,6 +18,8 @@ import java.util.Map;
 public final class InspectorUI {
     private final PSMemory psMemory;
     private final TacticsInspector inspector;
+    private final Map<Long, ImInt> inputInts = new HashMap<>();
+    private final List<UnitData.Field> statusFields = List.of(UnitData.Field.MOVE, UnitData.Field.JUMP, UnitData.Field.SP);
 
     public InspectorUI() throws Exception {
         psMemory = WindowsMemoryViewer.createEPSXE15Viewer(null, "ePSXe - Enhanced PSX emulator");
@@ -63,36 +65,6 @@ public final class InspectorUI {
         ImGui.end();
     }
 
-    void renderVitalBar(final String name, final int min, final int max, final float red, final float green, final float blue) {
-        ImGui.text(name);
-        ImGui.sameLine();
-        ImGui.pushStyleColor(ImGuiCol.PlotHistogram, red, green, blue, 1.0f);
-        final float fraction = (float) Math.min(min / (float) max, 1.0);
-        ImGui.progressBar(fraction, 250.0f, ImGui.getTextLineHeight(), "");
-        ImGui.popStyleColor();
-        ImGui.sameLine();
-        ImGui.text(String.format("%03d / %03d", min, max));
-    }
-
-    //    void renderUnitTab(final BattleUnit unit, final MiscUnitData misc) throws Exception {
-    void renderUnitTab(final UnitData unit) throws Exception {
-        if (ImGui.collapsingHeader("Vitals", ImGuiTreeNodeFlags.DefaultOpen)) {
-            renderVitals(unit);
-        }
-        if (ImGui.collapsingHeader("Status")) {
-            renderStatus(unit);
-        }
-        if (ImGui.collapsingHeader("Conditions")) {
-            renderConditions(unit);
-        }
-        if (ImGui.collapsingHeader("Attack")) {
-            renderAttack(unit);
-        }
-//        if (ImGui.collapsingHeader("Misc")) {
-//            renderMisc(misc);
-//        }
-    }
-
 //    private void renderMisc(final MiscUnitData misc) throws PSMemoryWriteException {
 //        ImGui.text(String.format("Previous 0x%08X", misc.getPreviousPtr()));
 //        ImGui.text(String.format("ID %d", misc.getId()));
@@ -130,7 +102,35 @@ public final class InspectorUI {
 //        }
 //    }
 
-    private final Map<Long, ImInt> inputInts = new HashMap<>();
+    void renderVitalBar(final String name, final int min, final int max, final float red, final float green, final float blue) {
+        ImGui.text(name);
+        ImGui.sameLine();
+        ImGui.pushStyleColor(ImGuiCol.PlotHistogram, red, green, blue, 1.0f);
+        final float fraction = (float) Math.min(min / (float) max, 1.0);
+        ImGui.progressBar(fraction, 250.0f, ImGui.getTextLineHeight(), "");
+        ImGui.popStyleColor();
+        ImGui.sameLine();
+        ImGui.text(String.format("%03d / %03d", min, max));
+    }
+
+    //    void renderUnitTab(final BattleUnit unit, final MiscUnitData misc) throws Exception {
+    void renderUnitTab(final UnitData unit) throws Exception {
+        if (ImGui.collapsingHeader("Vitals", ImGuiTreeNodeFlags.DefaultOpen)) {
+            renderVitals(unit);
+        }
+        if (ImGui.collapsingHeader("Status")) {
+            renderStatus(unit);
+        }
+        if (ImGui.collapsingHeader("Conditions")) {
+            renderConditions(unit);
+        }
+        if (ImGui.collapsingHeader("Attack")) {
+            renderAttack(unit);
+        }
+//        if (ImGui.collapsingHeader("Misc")) {
+//            renderMisc(misc);
+//        }
+    }
 
     private Integer inputInt(String label, int value, int step) {
         final ImInt imInt = inputInts.computeIfAbsent(
@@ -144,8 +144,6 @@ public final class InspectorUI {
         }
         return null;
     }
-
-    private final List<UnitData.Field> statusFields = List.of(UnitData.Field.MOVE, UnitData.Field.JUMP, UnitData.Field.SP);
 
     private void renderStatus(final UnitData unit) {
         unitDataFieldControl(unit, UnitData.Field.X_COORD);

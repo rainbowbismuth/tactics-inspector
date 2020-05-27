@@ -28,29 +28,28 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 @SuppressWarnings("MagicNumber")
 public final class Main {
-    private long windowPtr; // pointer to the current GLFW window
-
     // For application window properties
     private final int[] winWidth = new int[1];
     private final int[] winHeight = new int[1];
     private final int[] fbWidth = new int[1];
     private final int[] fbHeight = new int[1];
-
     // For mouse tracking
     private final double[] mousePosX = new double[1];
     private final double[] mousePosY = new double[1];
-
     // Mouse cursors provided by GLFW
     private final long[] mouseCursors = new long[ImGuiMouseCursor.COUNT];
-
     // LWJGL3 renderer (SHOULD be initialized)
     private final ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
-    private String glslVersion = null; // We can initialize our renderer with different versions of the GLSL
-
     // User UI to render
     private final InspectorUI inspectorUI = new InspectorUI();
+    private long windowPtr; // pointer to the current GLFW window
+    private String glslVersion = null; // We can initialize our renderer with different versions of the GLSL
 
     public Main() throws Exception {
+    }
+
+    public static void main(final String[] args) throws Exception {
+        new rainbowbismuth.fft.gui.Main().run();
     }
 
     public void run() throws Exception {
@@ -81,7 +80,7 @@ public final class Main {
 
         decideGlGlslVersions();
 
-        windowPtr = glfwCreateWindow(1280/2, 768, "FFT Inspector", NULL, NULL);
+        windowPtr = glfwCreateWindow(1280 / 2, 768, "FFT Inspector", NULL, NULL);
 
         if (windowPtr == NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
@@ -378,9 +377,5 @@ public final class Main {
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
-    }
-
-    public static void main(final String[] args) throws Exception {
-        new rainbowbismuth.fft.gui.Main().run();
     }
 }

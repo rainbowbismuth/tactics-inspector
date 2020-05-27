@@ -20,7 +20,7 @@ public class TacticsInspector {
     private final List<byte[]> writeBytes = new ArrayList<>();
 
     public TacticsInspector() {
-        for (int i =0; i<UnitData.NUM; i++) {
+        for (int i = 0; i < UnitData.NUM; i++) {
             unitData.add(unitDataView(i));
         }
     }
@@ -38,7 +38,7 @@ public class TacticsInspector {
     public List<UnitData> getUnitData() {
         return unitData;
     }
-    
+
     public int readByte(final int address) {
         return Byte.toUnsignedInt(ram[address]);
     }
