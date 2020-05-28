@@ -13,6 +13,7 @@ public class CharacterSet {
      * A default instance of CharacterSet.
      */
     public static final CharacterSet INSTANCE = new CharacterSet();
+    public static final char UNKNOWN = '�';
     /**
      * Only handling the first part of the character set right now.
      */

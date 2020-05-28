@@ -3,10 +3,7 @@ package rainbowbismuth.fft.gui;
 import imgui.ImGui;
 import imgui.ImInt;
 import imgui.enums.*;
-import rainbowbismuth.fft.PSMemory;
-import rainbowbismuth.fft.TacticsInspector;
-import rainbowbismuth.fft.WindowsMemoryViewer;
-import rainbowbismuth.fft.WordSize;
+import rainbowbismuth.fft.*;
 import rainbowbismuth.fft.enums.Status;
 import rainbowbismuth.fft.view.MiscUnitData;
 import rainbowbismuth.fft.view.StatusArray;
@@ -91,7 +88,7 @@ public final class InspectorUI {
         final int baseAddress = memViewerBaseAddr.get();
         for (int i = 0; i < 0x18; i++) {
             final int rowAddress = baseAddress + (i * 0x10);
-            ImGui.text(String.format("0x%08x", 0x8000_0000L + rowAddress));
+            ImGui.text(String.format("0x%08x ", 0x8000_0000L + rowAddress));
             for (int j = 0; j < 0x10; j++) {
                 ImGui.sameLine();
                 final int byteAddr = rowAddress + j;
@@ -107,6 +104,21 @@ public final class InspectorUI {
                     memViewerPeekAddr.set(byteAddr);
                 }
             }
+
+            final StringBuilder stringBuilder = new StringBuilder(0x12);
+            stringBuilder.append(' ');
+            for (int j = 0; j < 0x10; j++) {
+                final int byteAddr = rowAddress + j;
+                final int data = Byte.toUnsignedInt(ram[byteAddr]);
+                final char character = CharacterSet.INSTANCE.get(data);
+                if (character == CharacterSet.UNKNOWN) {
+                    stringBuilder.append(' ');
+                } else {
+                    stringBuilder.append(character);
+                }
+            }
+            ImGui.sameLine();
+            ImGui.textDisabled(stringBuilder.toString());
         }
     }
 
