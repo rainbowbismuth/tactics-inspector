@@ -4,6 +4,8 @@ import rainbowbismuth.fft.TacticsInspector;
 import rainbowbismuth.fft.WordSize;
 import rainbowbismuth.fft.enums.Facing;
 
+import java.util.List;
+
 public class UnitData {
     public static final int NUM = 20;
     public static final int SIZE = 0x1C0;
@@ -61,7 +63,7 @@ public class UnitData {
     }
 
     public boolean isInvalid() {
-        return read(Field.EXISTS) == 0xFF;
+        return read(Field.UNIT_ID) == 0xFF;
     }
 
     public boolean isOnHigherElevation() {
@@ -122,11 +124,25 @@ public class UnitData {
         return read(Field.IS_TAKING_TURN) == 0x01;
     }
 
+    public AIStatusData getExtendedAIStatusData() {
+        final int myUnitID = (int) read(Field.UNIT_ID);
+        final List<AIStatusData> aiData = inspector.getAiStatusData();
+        for (final AIStatusData aiDatum : aiData) {
+            if (aiDatum.getUnitID() == myUnitID) {
+                return aiDatum;
+            }
+        }
+        return null;
+    }
+
     public enum Field {
-        EXISTS(0x01, "Exists", WordSize.BYTE),
+        UNIT_ID(0x01, "Unit ID", WordSize.BYTE),
+        DEATH_COUNTER(0x07, "Death Counter", WordSize.BYTE),
         EXPERIENCE(0x21, "Experience", WordSize.BYTE),
         LEVEL(0x22, "Level", WordSize.BYTE),
+        ORIGINAL_BRAVE(0x23, "Original Brave", WordSize.BYTE),
         BRAVE(0x24, "Brave", WordSize.BYTE),
+        ORIGINAL_FAITH(0x25, "Original Faith", WordSize.BYTE),
         FAITH(0x26, "Faith", WordSize.BYTE),
         HP(0x28, "HP", WordSize.SHORT),
         MAX_HP(0x2A, "Max HP", WordSize.SHORT),

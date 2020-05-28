@@ -80,7 +80,7 @@ public final class Main {
 
         decideGlGlslVersions();
 
-        windowPtr = glfwCreateWindow(1280 / 2, 768, "FFT Inspector", NULL, NULL);
+        windowPtr = glfwCreateWindow(1280 * 2 / 3, 868, "FFT Inspector", NULL, NULL);
 
         if (windowPtr == NULL) {
             throw new RuntimeException("Failed to create the GLFW window");

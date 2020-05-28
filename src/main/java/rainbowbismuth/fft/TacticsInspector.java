@@ -1,5 +1,6 @@
 package rainbowbismuth.fft;
 
+import rainbowbismuth.fft.view.AIStatusData;
 import rainbowbismuth.fft.view.MiscUnitData;
 import rainbowbismuth.fft.view.UnitData;
 
@@ -13,11 +14,14 @@ public class TacticsInspector {
     private static final long UNIT_STATS_ADDR = 0x8019_08ccL;
     private static final long MISC_UNIT_DATA_ADDR = 0x800b_7308L;
     private static final long AI_DATA_ADDR = 0x801a_f3c4L;
+    private static final long UNIT_AI_EXTENDED_STATUS_ADDR = 0x8019_3924;
+
     private static final long ABILITY_NAME_TABLE_ADDR = 0x8016_3b88L;
 
     private final byte[] ram = new byte[RAM_SIZE];
     private final List<UnitData> unitData = new ArrayList<>(UnitData.NUM);
     private final List<MiscUnitData> miscUnitData = new ArrayList<>(MiscUnitData.NUM);
+    private final List<AIStatusData> aiStatusData = new ArrayList<>(AIStatusData.NUM);
 
     private final List<Integer> writeAddresses = new ArrayList<>();
     private final List<byte[]> writeBytes = new ArrayList<>();
@@ -27,7 +31,10 @@ public class TacticsInspector {
             unitData.add(unitDataView(i));
         }
         for (int i = 0; i < MiscUnitData.NUM; i++) {
-            miscUnitData.add(miscUnitData(i));
+            miscUnitData.add(miscUnitDataView(i));
+        }
+        for (int i = 0; i < AIStatusData.NUM; i++) {
+            aiStatusData.add(aiStatusDataView(i));
         }
     }
 
@@ -41,14 +48,24 @@ public class TacticsInspector {
         return new UnitData(this, address, index);
     }
 
-    private MiscUnitData miscUnitData(final int index) {
+    private MiscUnitData miscUnitDataView(final int index) {
         int address = (int) (MISC_UNIT_DATA_ADDR - USER_MEMORY_BASE);
         address += index * MiscUnitData.SIZE;
         return new MiscUnitData(this, address, index);
     }
 
+    private AIStatusData aiStatusDataView(final int index) {
+        int address = (int) (UNIT_AI_EXTENDED_STATUS_ADDR - USER_MEMORY_BASE);
+        address += index * AIStatusData.SIZE;
+        return new AIStatusData(this, address, index);
+    }
+
     public List<UnitData> getUnitData() {
         return unitData;
+    }
+
+    public List<AIStatusData> getAiStatusData() {
+        return aiStatusData;
     }
 
     public List<MiscUnitData> getMiscUnitData() {

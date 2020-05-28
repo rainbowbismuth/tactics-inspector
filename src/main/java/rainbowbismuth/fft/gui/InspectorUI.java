@@ -5,10 +5,7 @@ import imgui.ImInt;
 import imgui.enums.*;
 import rainbowbismuth.fft.*;
 import rainbowbismuth.fft.enums.Status;
-import rainbowbismuth.fft.view.MiscUnitData;
-import rainbowbismuth.fft.view.StatusArray;
-import rainbowbismuth.fft.view.StatusCTArray;
-import rainbowbismuth.fft.view.UnitData;
+import rainbowbismuth.fft.view.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -145,7 +142,7 @@ public final class InspectorUI {
 
     private void miscUnitDataFieldControl(final MiscUnitData misc, final MiscUnitData.Field field) {
         ImGui.setNextItemWidth(150.0f);
-        final Integer newVal = inputInt(field.getDisplayName(), (int) misc.read(field), 1);
+        final Integer newVal = inputInt(field.getDisplayName() + "##MU", (int) misc.read(field), 1);
         if (newVal != null) {
             misc.write(field, newVal);
         }
@@ -198,6 +195,46 @@ public final class InspectorUI {
         if (ImGui.collapsingHeader("Misc")) {
             renderMisc(misc);
         }
+        if (ImGui.collapsingHeader("AI Status Data")) {
+            final AIStatusData aiStatusData = unit.getExtendedAIStatusData();
+            if (aiStatusData != null) {
+                renderAIStatusData(aiStatusData);
+            }
+        }
+    }
+
+    private void renderAIStatusData(final AIStatusData aiData) {
+        final AIStatusData.Field[] fields = AIStatusData.Field.values();
+        final int half = fields.length / 2;
+        ImGui.columns(2);
+        for (int i = 0; i < fields.length; i++) {
+            if (i != 0 && i % half == 0) ImGui.nextColumn();
+            aiStatusDataControl(aiData, fields[i]);
+        }
+        ImGui.columns();
+        if (ImGui.beginTabBar("Unit AI Extended Status Tab Bar")) {
+            if (ImGui.beginTabItem("Status")) {
+                renderStatusArray(aiData.getStatus());
+                ImGui.endTabItem();
+            }
+            if (ImGui.beginTabItem("CT")) {
+                renderStatusCTPage(aiData.getStatus(), aiData.getStatusCT());
+                ImGui.endTabItem();
+            }
+            if (ImGui.beginTabItem("Inflicted")) {
+                renderStatusArray(aiData.getInflictedStatus());
+                ImGui.endTabItem();
+            }
+            ImGui.endTabBar();
+        }
+    }
+
+    private void aiStatusDataControl(final AIStatusData aiData, final AIStatusData.Field field) {
+        ImGui.setNextItemWidth(150.0f);
+        final Integer newVal = inputInt(field.getDisplayName() + "##UAES", (int) aiData.read(field), 1);
+        if (newVal != null) {
+            aiData.write(field, newVal);
+        }
     }
 
     private Integer inputInt(final String label, final int value, final int step) {
@@ -214,21 +251,29 @@ public final class InspectorUI {
     }
 
     private void renderStatus(final UnitData unit) {
-        unitDataFieldControl(unit, UnitData.Field.X_COORD);
-        unitDataFieldControl(unit, UnitData.Field.Y_COORD);
-
-        unitDataFieldControl(unit, UnitData.Field.BRAVE);
-        ImGui.sameLine();
-        unitDataFieldControl(unit, UnitData.Field.FAITH);
-
-        for (final UnitData.Field field : statusFields) {
-            unitDataFieldControl(unit, field);
+        final UnitData.Field[] fields = UnitData.Field.values();
+        final int half = fields.length / 2;
+        ImGui.columns(2);
+        for (int i = 0; i < fields.length; i++) {
+            if (i != 0 && i % half == 0) ImGui.nextColumn();
+            unitDataFieldControl(unit, fields[i]);
         }
+        ImGui.columns();
+//        unitDataFieldControl(unit, UnitData.Field.X_COORD);
+//        unitDataFieldControl(unit, UnitData.Field.Y_COORD);
+//
+//        unitDataFieldControl(unit, UnitData.Field.BRAVE);
+//        ImGui.sameLine();
+//        unitDataFieldControl(unit, UnitData.Field.FAITH);
+//
+//        for (final UnitData.Field field : statusFields) {
+//            unitDataFieldControl(unit, field);
+//        }
     }
 
     private void unitDataFieldControl(final UnitData unit, final UnitData.Field field) {
         ImGui.setNextItemWidth(150.0f);
-        final Integer newVal = inputInt(field.getDisplayName(), (int) unit.read(field), 1);
+        final Integer newVal = inputInt(field.getDisplayName() + "##UD", (int) unit.read(field), 1);
         if (newVal != null) {
             unit.write(field, newVal);
         }
