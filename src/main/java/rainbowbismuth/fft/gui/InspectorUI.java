@@ -162,7 +162,6 @@ public final class InspectorUI {
             }
 
             ImGui.columns(2);
-            ImGui.labelText("Index", String.valueOf(action.getIndex()));
             ImGui.labelText("Hit Chance?", String.format("%d", hitChance) + "%%%");
             ImGui.labelText("Target Priority", String.format("%.4f", targetPriorityFloat));
             ImGui.labelText("Caster Unit ID", String.valueOf(casterUnitId));
@@ -230,12 +229,15 @@ public final class InspectorUI {
     }
 
     private void renderMisc(final MiscUnitData misc) {
-        ImGui.text(String.format("Previous 0x%08X", misc.read(MiscUnitData.Field.PREV)));
-        ImGui.text(String.format("ID %d", misc.read(MiscUnitData.Field.ID)));
-        ImGui.text(String.format("Unit Data Pointer 0x%08X", misc.read(MiscUnitData.Field.UNIT_DATA_POINTER)));
-        for (final MiscUnitData.Field field : miscModifyFields) {
+        ImGui.columns(2);
+        for (int i = 0; i < miscModifyFields.size(); i++) {
+            if (i != 0 && i % (miscModifyFields.size() / 2) == 0) {
+                ImGui.nextColumn();
+            }
+            final MiscUnitData.Field field = miscModifyFields.get(i);
             miscUnitDataFieldControl(misc, field);
         }
+        ImGui.columns();
         if (ImGui.beginTabBar("Misc Tab Bar")) {
             if (ImGui.beginTabItem("Add")) {
                 renderStatusArray(misc.getStatusToAdd());
