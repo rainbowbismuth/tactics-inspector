@@ -1,6 +1,7 @@
 package rainbowbismuth.fft;
 
 import rainbowbismuth.fft.view.AIStatusData;
+import rainbowbismuth.fft.view.ConsideredActionData;
 import rainbowbismuth.fft.view.MiscUnitData;
 import rainbowbismuth.fft.view.UnitData;
 
@@ -14,14 +15,17 @@ public class TacticsInspector {
     private static final long UNIT_STATS_ADDR = 0x8019_08ccL;
     private static final long MISC_UNIT_DATA_ADDR = 0x800b_7308L;
     private static final long AI_DATA_ADDR = 0x801a_f3c4L;
+    private static final long CONSIDERED_ACTIONS_ADDR = 0x8019_f3f4L;
     private static final long UNIT_AI_EXTENDED_STATUS_ADDR = 0x8019_3924;
 
     private static final long ABILITY_NAME_TABLE_ADDR = 0x8016_3b88L;
+    private static final long SKILLSET_NAME_TABLE_ADDR = 0x8016_593bL;
 
     private final byte[] ram = new byte[RAM_SIZE];
     private final List<UnitData> unitData = new ArrayList<>(UnitData.NUM);
     private final List<MiscUnitData> miscUnitData = new ArrayList<>(MiscUnitData.NUM);
     private final List<AIStatusData> aiStatusData = new ArrayList<>(AIStatusData.NUM);
+    private final List<ConsideredActionData> consideredActionData = new ArrayList<>(ConsideredActionData.NUM);
 
     private final List<Integer> writeAddresses = new ArrayList<>();
     private final List<byte[]> writeBytes = new ArrayList<>();
@@ -35,6 +39,9 @@ public class TacticsInspector {
         }
         for (int i = 0; i < AIStatusData.NUM; i++) {
             aiStatusData.add(aiStatusDataView(i));
+        }
+        for (int i = 0; i < ConsideredActionData.NUM; i++) {
+            consideredActionData.add(consideredActionDataView(i));
         }
     }
 
@@ -60,6 +67,12 @@ public class TacticsInspector {
         return new AIStatusData(this, address, index);
     }
 
+    private ConsideredActionData consideredActionDataView(final int index) {
+        int address = (int) (CONSIDERED_ACTIONS_ADDR - USER_MEMORY_BASE);
+        address += index * ConsideredActionData.SIZE;
+        return new ConsideredActionData(this, address, index);
+    }
+
     public List<UnitData> getUnitData() {
         return unitData;
     }
@@ -67,6 +80,11 @@ public class TacticsInspector {
     public List<AIStatusData> getAiStatusData() {
         return aiStatusData;
     }
+
+    public List<ConsideredActionData> getConsideredActionData() {
+        return consideredActionData;
+    }
+
 
     public List<MiscUnitData> getMiscUnitData() {
         final List<MiscUnitData> tempMiscUnitData = new ArrayList<>(miscUnitData);
@@ -106,6 +124,18 @@ public class TacticsInspector {
 
     public String readString(final int start, final int endInclusive) {
         return CharacterSet.INSTANCE.read(ram, start, endInclusive);
+    }
+
+    public List<String> readAbilityNameTable() {
+        final int addr = (int) (ABILITY_NAME_TABLE_ADDR - USER_MEMORY_BASE);
+        return CharacterSet.INSTANCE.readTable(ram, addr, addr + 0x2000);
+    }
+
+    public List<String> readSkillSetNameTable() {
+        final int addr = (int) (SKILLSET_NAME_TABLE_ADDR - USER_MEMORY_BASE);
+        final List<String> skillSetNameTable = CharacterSet.INSTANCE.readTable(ram, addr, addr + 0x500);
+        skillSetNameTable.add(0, "");
+        return skillSetNameTable;
     }
 
     public void write(final int address, final long value, final WordSize wordSize) {

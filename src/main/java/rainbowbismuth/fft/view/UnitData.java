@@ -62,6 +62,22 @@ public class UnitData {
         return index;
     }
 
+    public int getUnitId() {
+        return (int) read(Field.UNIT_ID);
+    }
+
+    public int getMapX() {
+        return (int) read(Field.X_COORD);
+    }
+
+    public int getMapY() {
+        return (int) read(Field.Y_COORD);
+    }
+
+    public boolean isValid() {
+        return read(Field.UNIT_ID) != 0xFF;
+    }
+
     public boolean isInvalid() {
         return read(Field.UNIT_ID) == 0xFF;
     }

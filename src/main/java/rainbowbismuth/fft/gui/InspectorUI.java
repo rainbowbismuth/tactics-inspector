@@ -10,12 +10,12 @@ import rainbowbismuth.fft.view.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public final class InspectorUI {
     private final PSMemory psMemory;
     private final TacticsInspector inspector;
     private final Map<Long, ImInt> inputInts = new HashMap<>();
-    private final List<UnitData.Field> statusFields = List.of(UnitData.Field.MOVE, UnitData.Field.JUMP, UnitData.Field.SP);
     private final List<MiscUnitData.Field> miscModifyFields = List.of(
             MiscUnitData.Field.PORTRAIT_VRAM_SLOT,
             MiscUnitData.Field.PORTRAIT_SPRITESHEET_ID,
@@ -23,12 +23,17 @@ public final class InspectorUI {
             MiscUnitData.Field.UNIT_SPRITESHEET_ID,
             MiscUnitData.Field.UNIT_PALETTE,
             MiscUnitData.Field.MODIFIED_PALETTE);
-    private final ImInt memViewerBaseAddr = new ImInt(0x1a_f3c4);
-    private final ImInt memViewerPeekAddr = new ImInt(0x1a_f3c4);
+    private final ImInt memViewerBaseAddr = new ImInt(1700852);
+    private final ImInt memViewerPeekAddr = new ImInt(1700852);
+    private final List<String> abilityNameTable;
+    private final List<String> skillSetNameTable;
 
     public InspectorUI() throws Exception {
         psMemory = WindowsMemoryViewer.createEPSXE15Viewer(null, "ePSXe - Enhanced PSX emulator");
         inspector = new TacticsInspector();
+        psMemory.read(inspector.getRAM());
+        abilityNameTable = inspector.readAbilityNameTable();
+        skillSetNameTable = inspector.readSkillSetNameTable();
     }
 
     void init() {
@@ -50,6 +55,10 @@ public final class InspectorUI {
         if (ImGui.beginTabBar("Main Tools")) {
             if (ImGui.beginTabItem("Unit Viewer")) {
                 renderUnitSelectionWindow();
+                ImGui.endTabItem();
+            }
+            if (ImGui.beginTabItem("AI Viewer")) {
+                renderAIViewer();
                 ImGui.endTabItem();
             }
             if (ImGui.beginTabItem("Memory Viewer")) {
@@ -119,6 +128,78 @@ public final class InspectorUI {
         }
     }
 
+    void renderAIViewer() {
+        final List<UnitData> units = inspector.getUnitData();
+        final List<ConsideredActionData> actions = inspector.getConsideredActionData();
+
+//        final Optional<UnitData> actor = units.stream().filter(unit -> unit.isValid() && unit.isTakingTurn()).findFirst();
+//        if (!actor.isPresent()) {
+//            return;
+//        }
+        for (final ConsideredActionData action : actions) {
+            final int hitChance = (int) action.read(ConsideredActionData.Field.HIT_CHANCE);
+            final int targetPriority = (int) action.read(ConsideredActionData.Field.TARGET_PRIORITY);
+            final int casterUnitId = (int) action.read(ConsideredActionData.Field.CASTER_UNIT_ID);
+            final int skillSetId = (int) action.read(ConsideredActionData.Field.SKILLSET_ID);
+            final int abilityId = (int) action.read(ConsideredActionData.Field.ABILITY_ID);
+            final int targetMapX = (int) action.read(ConsideredActionData.Field.TARGET_MAP_X);
+            final int targetMapY = (int) action.read(ConsideredActionData.Field.TARGET_MAP_Y);
+
+            // TODO: I'm guessing this is most certainly wrong.
+            final float targetPriorityFloat = ((short) targetPriority - 1) / 128.0f;
+
+//            if (casterUnitId != actor.get().getUnitId()) {
+//                continue;
+//            }
+            if (skillSetId == 0 && abilityId == 0) {
+                continue;
+            }
+            if (skillSetId == 0xff || abilityId == 0xffff) {
+                continue;
+            }
+            if (skillSetId == 1 && abilityId != 0) {
+                continue;
+            }
+
+            ImGui.columns(2);
+            ImGui.labelText("Index", String.valueOf(action.getIndex()));
+            ImGui.labelText("Hit Chance?", String.format("%d", hitChance) + "%%%");
+            ImGui.labelText("Target Priority", String.format("%.4f", targetPriorityFloat));
+            ImGui.labelText("Caster Unit ID", String.valueOf(casterUnitId));
+            final Optional<UnitData> caster = units.stream()
+                    .filter(unit -> unit.isValid() && casterUnitId == unit.getUnitId()).findFirst();
+            if (caster.isPresent()) {
+                ImGui.labelText("Caster Name", caster.get().getName());
+            } else {
+                ImGui.labelText("Caster Name", "(not found)");
+            }
+            // TODO: This isn't accounting for the different map layers
+            final Optional<UnitData> target = units.stream()
+                    .filter(unit -> unit.isValid() && targetMapX == unit.getMapX() && targetMapY == unit.getMapY()).findFirst();
+            if (target.isPresent()) {
+                ImGui.labelText("Target Name", target.get().getName());
+            } else {
+                ImGui.labelText("Target Name", "(not found)");
+            }
+            ImGui.nextColumn();
+            ImGui.labelText("Skillset ID", String.format("0x%02x", skillSetId));
+            if (skillSetId < skillSetNameTable.size()) {
+                ImGui.labelText("Skillset Name", skillSetNameTable.get(skillSetId));
+            } else {
+                ImGui.labelText("Skillset Name", "(not found)");
+            }
+
+            ImGui.labelText("Ability ID", String.format("0x%03x", abilityId));
+            if (abilityId < abilityNameTable.size()) {
+                ImGui.labelText("Ability Name", abilityNameTable.get(abilityId));
+            } else {
+                ImGui.labelText("Ability Name", "(not found)");
+            }
+            ImGui.labelText("Target Position", String.format("(%d, %d)", targetMapX, targetMapY));
+            ImGui.columns();
+            ImGui.newLine();
+        }
+    }
 
     void renderUnitSelectionWindow() {
         if (ImGui.beginTabBar("Unit Selection")) {
